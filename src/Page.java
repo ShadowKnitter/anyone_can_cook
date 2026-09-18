@@ -87,6 +87,7 @@ public class Page extends JPanel{
         garbage.setBorderPainted(false);
         garbage.setBounds((int)(Main.getScreenWidth()-(220*Main.getMagnification())), (int)(Main.getScreenHeight()- (int)(220*Main.getMagnification())), (int)(200*Main.getMagnification()), (int)(200*Main.getMagnification()));
         garbage.addActionListener(e -> {
+            Step.getWithID(Step.getCurrentlyDisplayedId()).setVisible(false);
             garbage.setVisible(false);
             screen.turnPageLeft(this);
         });
@@ -104,7 +105,7 @@ public class Page extends JPanel{
         setOpaque(false);
         setLayout(null);
         setVisible(false);
-        screen.layers.add(this,JLayeredPane.MODAL_LAYER);
+        screen.layers.add(this,JLayeredPane.MODAL_LAYER);        
 
         Left.setBounds(0,0,getWidth()/2-(int)(40*Main.getMagnification()), getHeight());
         Left.setLayout(new GridLayout(12,1,0,5));
@@ -129,6 +130,17 @@ public class Page extends JPanel{
 
     public Page(String name,Recipe[] components, GUI screen){
         this(name, screen);
+
+        JButton surpriseMe = new JButton(Main.resizeImageIcon(new ImageIcon("img/Die.png"), (int)(100*Main.getMagnification()), (int)(100*Main.getMagnification())));
+        surpriseMe.setBounds((int)(75*Main.getMagnification()),(int)(2*Main.getMagnification()),(int)(100*Main.getMagnification()),(int)(100*Main.getMagnification()));
+        surpriseMe.setContentAreaFilled(false);
+        surpriseMe.setBorderPainted(false);
+        surpriseMe.addActionListener(e -> {     
+            screen.setWantedID(screen.getRecipes()[(int)(Math.random() * (screen.getRecipes().length))].getID());
+            screen.turnPageRight();
+        });
+        add(surpriseMe);
+
         addNavContent(components, screen);
         close = new JButton(Main.resizeImageIcon(new ImageIcon("img/Book Icon.png"), (int)(200*Main.getMagnification()), (int)(200*Main.getMagnification())));
         close.setVisible(false);

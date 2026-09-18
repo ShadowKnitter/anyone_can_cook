@@ -95,7 +95,8 @@ public class Step extends JPanel{
             }
         });
         add(finished);
-
+        
+        Step.setCurrentlyDisplayedId(ID);
         addTo.requestFocus();
         screen.layers.add(this, JLayeredPane.MODAL_LAYER);
         screen.update();

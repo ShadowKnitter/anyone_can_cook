@@ -1,9 +1,15 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 
 public final class GUI extends JFrame implements ActionListener{
@@ -120,6 +126,7 @@ public final class GUI extends JFrame implements ActionListener{
             book.setIcon(Main.resizeImageIcon(new ImageIcon("img/Book Opening.gif"), bookWidth, bookHeight));
             openButton.setVisible(false);
             title.setVisible(false);
+            playPageTurn();
         }
     }
 
@@ -128,18 +135,41 @@ public final class GUI extends JFrame implements ActionListener{
         recipesPage.setVisible(false);
         recipesPage.setCloseVisible(false);
         book.setIcon(Main.resizeImageIcon(new ImageIcon("img/Book Closing.gif"), bookWidth, bookHeight));
+        playPageTurn();
     }
 
     public final void turnPageRight(){
         recipesPage.setVisible(false);
         recipesPage.setCloseVisible(false);
         book.setIcon(Main.resizeImageIcon(new ImageIcon("img/Book Page Turn Right.gif"), bookWidth, bookHeight));
+        playPageTurn();
     }
     public final void turnPageLeft(Page fromPage){
         fromPage.setVisible(false);
         wantedID = recipesPage.getID();
         book.setIcon(Main.resizeImageIcon(new ImageIcon("img/Book Page Turn Left.gif"), bookWidth, bookHeight));
+        playPageTurn();
     }
+    public final void playPageTurn(){
+        try {
+            File audioFile = new File("Page turn.wav");
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
+            Clip sfx = AudioSystem.getClip();
+            sfx.open(audioStream);
+            sfx.setFramePosition(0); 
+            sfx.start();
+        }  
+        catch (UnsupportedAudioFileException e) {
+            System.out.println("Unsupported Audio File Exception AT TRY CATCH OF MUSIC SETUP IN MAIN: " + e);
+        }
+        catch (IOException e) {
+            System.out.println("IO Exception AT TRY CATCH OF MUSIC SETUP IN MAIN: " + e);
+        }
+        catch (LineUnavailableException e) {
+            System.out.println("Line Unavailable Exception AT TRY CATCH OF MUSIC SETUP IN MAIN: " + e);
+        }
+    }
+
     public final void setWantedID(int id){
         wantedID = id;
     }
