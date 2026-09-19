@@ -1,51 +1,54 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
-
 import javax.swing.*;
 
 public class Page extends JPanel{
+    //component vars
     private JLabel title = new JLabel();
-
     private JTextField editTitle;
-
     private JPanel Left = new JPanel();
     private JPanel Right = new JPanel();
-
     private JButton close;
     private JButton garbage;
 
+    //steps being added in page creation
     private ArrayList<Step> addingSteps= new ArrayList<>();
 
+    //identification
+    private final int ID;
     private static ArrayList<Page> allPages = new ArrayList<>();
     private static int numOfPages = 0;
-    private final int ID;
-
-    public Page (GUI screen){
+    
+    //constructors
+    public Page (GUI screen){//used for creating a page or recipe without data
+        
+        //sets the ID and adds to an array of all existing pages
         ID = numOfPages;
         numOfPages++;
         allPages.add(this);
 
+        //panel setup
         setBounds(screen.book.getX()+(int)(100*Main.getMagnification()),(int)(570*Main.getMagnification()),(int)(1165*Main.getMagnification()),(int)(800*Main.getMagnification()));
         setOpaque(false);
         setLayout(null);
         setVisible(false);
         screen.layers.add(this,JLayeredPane.MODAL_LAYER);
 
+        //left side of the book setup
         Left.setBounds(0,0,getWidth()/2-(int)(40*Main.getMagnification()), getHeight());
         Left.setLayout(new GridLayout(12,1,0,5));
         Left.setOpaque(false);
         add(Left);
-        
+
+        //right side of the book setup
         Right.setBounds(getWidth()/2+(int)(40*Main.getMagnification()),0,getWidth()/2-(int)(40*Main.getMagnification()), getHeight());
         Right.setLayout(new GridLayout(12,1,0,5));
         Right.setOpaque(false);
         add(Right);
 
+        //title editor setup
         editTitle = new JTextField("Type Title Here");
         editTitle.setFont(new Font("Elephant", Font.BOLD, (int)(50*(Main.getMagnification()))));
         editTitle.setHorizontalAlignment(JLabel.CENTER);
@@ -54,14 +57,14 @@ public class Page extends JPanel{
         editTitle.setBorder(null);
         editTitle.addFocusListener(new FocusAdapter() {
             @Override
-            public void focusGained(FocusEvent e) {
+            public void focusGained(FocusEvent e) {//clears title when it is clicked
                 if (editTitle.getText().equals("Type Title Here")) {
                     editTitle.setText("");
                 }
             }
 
             @Override
-            public void focusLost(FocusEvent e) {
+            public void focusLost(FocusEvent e) {//replaces title when user clicks away without entering a title
                 if (editTitle.getText().isEmpty()) {
                     editTitle.setText("Type Title Here");
                 }
@@ -69,6 +72,7 @@ public class Page extends JPanel{
         });
         Left.add(editTitle);
         
+        //startup setup
         JButton getStarted = new JButton("Get Started!");
         getStarted.setHorizontalAlignment(JButton.LEFT);
         getStarted.setBackground(new Color(142,124,94));
@@ -81,12 +85,12 @@ public class Page extends JPanel{
         });
         Left.add(getStarted);
 
-
+        //garbage/scrap recipe button setup
         garbage = new JButton(Main.resizeImageIcon(new ImageIcon("img/Garbage.png"), (int)(200*Main.getMagnification()), (int)(200*Main.getMagnification())));
         garbage.setContentAreaFilled(false);
         garbage.setBorderPainted(false);
         garbage.setBounds((int)(Main.getScreenWidth()-(220*Main.getMagnification())), (int)(Main.getScreenHeight()- (int)(220*Main.getMagnification())), (int)(200*Main.getMagnification()), (int)(200*Main.getMagnification()));
-        garbage.addActionListener(e -> {
+        garbage.addActionListener(e -> { //returns to the recipes/navigation page, deleting the recipe-in-progress
             Step.getWithID(Step.getCurrentlyDisplayedId()).setVisible(false);
             garbage.setVisible(false);
             screen.turnPageLeft(this);
@@ -95,100 +99,109 @@ public class Page extends JPanel{
 
         screen.update();
     }
-
-    public Page(String name, GUI screen){
+    public Page(String name, GUI screen){ //general page constructor for pages with data
+        //sets the ID and adds to an array of all existing pages
         ID = numOfPages;
         numOfPages++;
         allPages.add(this);
 
+        //panel setup
         setBounds(screen.book.getX()+(int)(100*Main.getMagnification()),(int)(570*Main.getMagnification()),(int)(1165*Main.getMagnification()),(int)(800*Main.getMagnification()));
         setOpaque(false);
         setLayout(null);
         setVisible(false);
         screen.layers.add(this,JLayeredPane.MODAL_LAYER);        
 
+        //left side of the book setup
         Left.setBounds(0,0,getWidth()/2-(int)(40*Main.getMagnification()), getHeight());
         Left.setLayout(new GridLayout(12,1,0,5));
         Left.setOpaque(false);
         add(Left);
-        
+
+        //right side of the book setup
         Right.setBounds(getWidth()/2+(int)(40*Main.getMagnification()),0,getWidth()/2-(int)(40*Main.getMagnification()), getHeight());
         Right.setLayout(new GridLayout(12,1,0,5));
         Right.setOpaque(false);
         add(Right);
 
+        //title setup and display
         title.setText(name);
         title.setFont(new Font("Elephant", Font.BOLD, (int)(25*(Main.getMagnification()))));
         title.setHorizontalAlignment(JLabel.CENTER);
         title.setForeground(new Color(0,0,50));
         Left.add(title);
 
+        //spaces out the title from the steps
         JLabel spacer = new JLabel();
         spacer.setVisible(false);
         Left.add(spacer);
     }
-
-    public Page(String name,Recipe[] components, GUI screen){
+    public Page(String name,Recipe[] components, GUI screen){ //creates a recipes/navigation page
         this(name, screen);
 
+        //'surprise me'/random recipe selection button setup
         JButton surpriseMe = new JButton(Main.resizeImageIcon(new ImageIcon("img/Die.png"), (int)(100*Main.getMagnification()), (int)(100*Main.getMagnification())));
         surpriseMe.setBounds((int)(75*Main.getMagnification()),(int)(2*Main.getMagnification()),(int)(100*Main.getMagnification()),(int)(100*Main.getMagnification()));
         surpriseMe.setContentAreaFilled(false);
         surpriseMe.setBorderPainted(false);
-        surpriseMe.addActionListener(e -> {     
+        surpriseMe.addActionListener(e -> {   //opens a the page of a random existing recipe  
             screen.setWantedID(screen.getRecipes()[(int)(Math.random() * (screen.getRecipes().length))].getID());
             screen.turnPageRight();
         });
         add(surpriseMe);
 
         addNavContent(components, screen);
+
+        //close program button setup and display
         close = new JButton(Main.resizeImageIcon(new ImageIcon("img/Book Icon.png"), (int)(200*Main.getMagnification()), (int)(200*Main.getMagnification())));
         close.setVisible(false);
         close.setContentAreaFilled(false);
         close.setBorderPainted(false);
         close.setBounds((int)(Main.getScreenWidth()-(220*Main.getMagnification())), (int)(Main.getScreenHeight()- (int)(220*Main.getMagnification())), (int)(200*Main.getMagnification()), (int)(200*Main.getMagnification()));
-        close.addActionListener(e -> {
+        close.addActionListener(e -> { //closes the program
             close.setVisible(false);
             screen.close();
         });
         screen.layers.add(close, JLayeredPane.MODAL_LAYER);
     }
-
-    public Page(String name, Step[] components, GUI screen){
+    public Page(String name, Step[] components, GUI screen){//creates a recipe page
         this(name, screen);
         addContent(components, screen);
     }
 
+    //adds navigational content
     private void addNavContent(Recipe[] components, GUI screen){
-        if (components.length<=22){
-            for (int i =0; i<=components.length; i++){
-                if (!(components.length == 22 && i ==22)){
+        if (components.length<=22){ //ensures content fits on the page, preventing save file tampering errors
+            for (int i =0; i<=components.length; i++){ //fills in the page with all the recipes provided
+                if (!(components.length == 22 && i ==22)){ //creates the add recipe button last
                     JButton listItem ;
                     if (components.length<22 && i==components.length){
                         listItem = new JButton("Add Recipe");
-                        listItem.addActionListener(e -> {     
+                        listItem.addActionListener(e -> { //creates a new recipe page and flips to it when pressed
                             Recipe create = new Recipe(screen);
                             screen.setWantedID(create.getID());               
                             screen.turnPageRight();
                         });
                     }
-                    else{
+                    else{ //creates a regular recipe navigation button
                         listItem= new JButton(components[i].getTitle());
-                        listItem.addActionListener(e -> {
+                        listItem.addActionListener(e -> { //flips to the requested recipe page
                             for (int j=0; j< components.length; j++){
-                                if (e.getSource() == listItem && listItem.getText().equals(components[j].getTitle())){
+                                if (e.getSource() == listItem && listItem.getText().equals(components[j].getTitle())){ //checks if this is the right page to flip to
                                     screen.setWantedID(components[j].getID());
                                     screen.turnPageRight();
                                 }
                             }
                         });
                     }
+                    //adds to the correct side, depending on how many recipes have already been added
                     if(i<10){
                         Left.add(listItem);
                     }
                     else{
                         Right.add(listItem);
                     }
+                    //final setup
                     listItem.setHorizontalAlignment(JButton.LEFT);
                     listItem.setBackground(new Color(142,124,94));
                     listItem.setForeground(new Color(0,0,50));
@@ -199,13 +212,14 @@ public class Page extends JPanel{
         }
     }
 
+    //adds regular content
     private void addContent(Step[] components,GUI screen){
-        if (components.length<=22){
-            for (int i =0; i<=components.length; i++){
+        if (components.length<=22){ //ensures content fits on the page, preventing save file tampering errors
+            for (int i =0; i<=components.length; i++){ //fills in the page with all the steps provided
                 JButton listItem;
-                if(i==components.length){
+                if(i==components.length){ //creates the return button last
                     listItem = new JButton("Return");
-                    listItem.addActionListener(e -> {                    
+                    listItem.addActionListener(e -> {    //returns to the recipes/navigation page              
                         screen.setWantedID(screen.getRecipesPageID());
                         if (Step.getCurrentlyDisplayedId() != -1){
                             Step.getWithID(Step.getCurrentlyDisplayedId()).setVisible(false);
@@ -214,12 +228,12 @@ public class Page extends JPanel{
                         screen.turnPageLeft(this);
                     });
                 }
-                else{
+                else{ //creates a regular step selection button
                     listItem = new JButton(components[i].getText());
                     listItem.addActionListener(e -> {                    
-                        for (int j=0; j< components.length; j++){
+                        for (int j=0; j< components.length; j++){//shows the requested recipe step
                             if (e.getSource() == listItem && listItem.getText().equals(components[j].getText())){
-                                if (Step.getCurrentlyDisplayedId() != -1){
+                                if (Step.getCurrentlyDisplayedId() != -1){ //hides the already shown step, if there is one
                                     Step.getWithID(Step.getCurrentlyDisplayedId()).setVisible(false);
                                 }
                                 components[j].setVisible(true);
@@ -228,12 +242,14 @@ public class Page extends JPanel{
                         }
                     });
                 }
+                //adds to the correct side, depending on how many recipes have already been added
                 if(i<10){
                     Left.add(listItem);
                 }
                     else{
                     Right.add(listItem);
                 }
+                //final setup
                 listItem.setHorizontalAlignment(JButton.LEFT);
                 listItem.setBackground(new Color(142,124,94));
                 listItem.setForeground(new Color(0,0,50));
@@ -243,6 +259,21 @@ public class Page extends JPanel{
         }
     }
 
+    //getters
+    public ArrayList<Step> getAddingSteps(){
+        return addingSteps;
+    }
+    public final int getID(){
+        return ID;
+    }
+    public static Page getWithID(int id){
+        return allPages.get(id);
+    }
+    public static int getNumOfPages(){
+        return numOfPages;
+    }
+
+    //setters
     public final void setCloseVisible(boolean isVisible){
         close.setVisible(isVisible);
     }
@@ -250,29 +281,14 @@ public class Page extends JPanel{
         garbage.setVisible(isVisible);
     }
 
-    public final int getID(){
-        return ID;
-    }
-
-    public static Page getWithID(int id){
-        return allPages.get(id);
-    }
-
-    public static int getNumOfPages(){
-        return numOfPages;
-    }
-
-    public ArrayList<Step> getAddingSteps(){
-        return addingSteps;
-    }
-
+    //adds a new step to the page
     public void addStep(Step step, GUI screen){
-        if (Right.getComponentCount()<11){
+        if (Right.getComponentCount()<11){ //ensures the pages arent at max capacity
             addingSteps.add(step);
             JButton listItem = new JButton(step.getText());
             if(Left.getComponentCount()<12){
                 Left.add(listItem);
-                listItem.addActionListener(e -> {                    
+                listItem.addActionListener(e -> { //removes the step if it is clicked in the editor             
                     Left.remove(listItem);
                     addingSteps.remove(step);
                     screen.update();
@@ -280,12 +296,13 @@ public class Page extends JPanel{
             }
             else{
                 Right.add(listItem);
-                listItem.addActionListener(e -> {                    
+                listItem.addActionListener(e -> { //removes the step if it is clicked in the editor              
                     Right.remove(listItem);
                     addingSteps.remove(step);
                     screen.update();
                 });
             }
+            //final setup
             listItem.setHorizontalAlignment(JButton.LEFT);
             listItem.setBackground(new Color(142,124,94));
             listItem.setForeground(new Color(0,0,50));
@@ -294,39 +311,42 @@ public class Page extends JPanel{
         }
     }
 
+    //saves the page to the recipes/navigation page and puts it into the save file
     public void savePage(GUI screen){
-        if (screen.getRecipes().length<=22){
+        if (screen.getRecipes().length<=22){//ensures the recipes list is not at max capacity
             Recipe[] tempRecipes = new Recipe[screen.getRecipes().length+1];
-            for (int i = 0; i<screen.getRecipes().length; i++){
+            for (int i = 0; i<screen.getRecipes().length; i++){//places all of the recipes into an array 1 item longer
                 tempRecipes[i] =screen.getRecipes()[i];
             }
-            Step[] tempSteps = new Step[addingSteps.size()];
-            for (int i = 0; i<addingSteps.size(); i++){
+            Step[] tempSteps = new Step[addingSteps.size()]; 
+            for (int i = 0; i<addingSteps.size(); i++){ //adds all the steps required to be added
                 tempSteps[i] = new Step(addingSteps.get(i).getIconNum(),addingSteps.get(i).getText(), screen);
             }
             
-            tempRecipes[screen.getRecipes().length] = new Recipe(editTitle.getText(), tempSteps, screen);
+            tempRecipes[screen.getRecipes().length] = new Recipe(editTitle.getText(), tempSteps, screen); //fills in the final space with the new recipe
 
+            //adds it to the recipes page and allows it to be displayed
             screen.setRecipes(tempRecipes);
             screen.recipesPage = new Page ("Recipes", screen.getRecipes(), screen);
             screen.turnPageLeft(this);
 
+            //saves the data
             try {
                 //deletes the outdated information
                 File file = new File("saveData.txt");
                 file.delete();
                 try (PrintWriter pw = new PrintWriter(new FileWriter(file, true))) {
-                    pw.println("\n"+screen.getTitle());
-                    pw.print(screen.getRecipes().length);
-                    for (int i = 0; i<screen.getRecipes().length; i++) {
+                    pw.println("\n"+screen.getTitle());//saves the tile
+                    pw.print(screen.getRecipes().length);//saves the amount of recipes
+                    for (int i = 0; i<screen.getRecipes().length; i++) { //saves each recipe
                         Recipe recipe = screen.getRecipes()[i];
-                        pw.println("\n\n"+recipe.getSteps().length);
+                        pw.println("\n\n"+recipe.getSteps().length);//saves amount of steps in the recipe
 
-                        for (int j = 0; j<recipe.getSteps().length; j++){
-                            pw.println(recipe.getSteps()[j].getIconNum());
-                            pw.println(recipe.getSteps()[j].getText());
+                        for (int j = 0; j<recipe.getSteps().length; j++){//saves all the steps of this recipe
+                            pw.println(recipe.getSteps()[j].getIconNum());//saves step icon
+                            pw.println(recipe.getSteps()[j].getText());//saves step instructions
                         }
-                        pw.print(recipe.getTitle());
+                        pw.print(recipe.getTitle());// saves the recipe title
                     }
                 }
             } 
@@ -335,5 +355,4 @@ public class Page extends JPanel{
             }
         }
     }
-
 }

@@ -10,6 +10,7 @@ public final class Main {
     private static final double SCREEN_HEIGHT = screenSize.getHeight();
     private static double MAGNIFICATION;
 
+    //instatiates screen
     static GUI screen;
 
     //Main method
